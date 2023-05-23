@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tree Chart</title>
+
+    <!-- The tree structure -->
+    <script src="script/Tree.js"></script>
+
+    <!-- The javascript and CSS libraries for the tree display -->
+    <script src="script/raphael.js"></script>
+    <script src="script/Treant.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/Treant.css">
+
+    <!-- Boostrap CSS link -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css"
+        integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+
+
+    <script>
+        const t = new Tree();
+        const green = "alert-success";
+        const red = "alert-danger";
+
+        function mainLauncher(event) {
+
+            event.preventDefault();
+            messageAlert.classList.remove(messageAlert.classList.item(0));  // Clearing the class so we can add green or red as needed.
+
+            var nameInput = document.getElementById('input1').value;
+            var salaryInput = document.getElementById('input2').value;
+            var messageSpan = document.getElementById('message');
+            t.searchNode = null;
+
+            if (!salaryInput.match(/^\d+(\.\d+)?$/) || !nameInput.match(/^[A-Za-z\s()]*$/
+            )) {
+                messageAlert.classList.add(red);
+                messageSpan.textContent = "Please enter valid data.";
+                return;
+            }
+
+            if (t.root) {
+                t.nodeFinder(t.root, document.getElementById('input1').value);
+                var parentNode = t.searchNode;
+                if (parentNode) {
+                    messageAlert.classList.add(red);
+                    messageSpan.textContent = "This employee already exists.";
+                    return;
+                }
+            }
+            var check = treeFill(event);
+            if (check) {
+                fillDropdown(event);
+                makeTree(event)
+            }
+
+        }
+
+        function treeFill(event) {
+            event.preventDefault();
+
+            var messageSpan = document.getElementById('message');
+            var valid = false;
+
+            // Setting the root of the tree
+            if (t.root == null) {
+                const root = new Node(document.getElementById('input1').value, document.getElementById('input2').value, null);
+                t.addRoot(root);
+                messageAlert.classList.add(green);
+                messageSpan.textContent = "Successfully added " + document.getElementById('input1').value + " as root.";
+                valid = true;
+            }
+
+            // Adding subsquent entries
+            else {
+                t.nodeFinder(t.root, document.getElementById('input3').value);
+                var parentNode = t.searchNode;
+
+                if (parentNode.getLeftNode() == null) {
+                    parentNode.setLeftNode(new Node(document.getElementById('input1').value, document.getElementById('input2').value, parentNode));
+                    messageAlert.classList.add(green);
+                    messageSpan.textContent = "Successfully added " + document.getElementById('input1').value;
+                    valid = true;
+                }
+                else if (parentNode.getRightNode() == null) {
+                    parentNode.setRightNode(new Node(document.getElementById('input1').value, document.getElementById('input2').value, parentNode));
+                    messageAlert.classList.add(green);
+                    messageSpan.textContent = "Successfully added " + document.getElementById('input1').value;
+                    valid = true;
+                }
+                else {
+                    messageAlert.classList.add(red);
+                    messageSpan.textContent = "Cannot add another worker to this supervisor.";
+                }
+
+            }
+            return valid;
+
+        }
+    </script>
+
+</head>
+
+
+<body>
+
+    <!-- Container for alert messages -->
+    <div id="messageAlert" role="alert" style="width: 40%; margin: 30px auto; border-radius:7px; padding:10px;">
+        <span id="message"></span>
+    </div>
+
+    <!-- Form for user inputs -->
+    <form style="width: 40%; margin: 70px auto;" onsubmit="mainLauncher(event)">
+        <div class="form-row">
+            <div class="col" id="workerName">
+                <label>Name:</label>
+                <input type="text" id='input1' class="form-control" autocomplete="off">
+            </div>
+            <div class="col" id="salary">
+                <label>Salary:</label>
+                <input type="text" id='input2' class="form-control" autocomplete="off">
+            </div>
+            <div class="col" id="supervisor">
+                <label>Supervisor:</label>
+                <select id="input3" class="form-control">
+                    <option value=""></option>
+                </select>
+            </div>
+
+        </div>
+        <button type="submit" class="btn btn-primary" style="margin:15px 0">Submit</button>
+    </form>
+
+    <br><br>
+
+
+    <div style="margin: 0 auto; text-align:center">
+
+        <br><br>
+
+
+        <!-- Container for the diagram -->
+        <div class="chart" id="OrganiseChart-simple" style="margin: 0 auto;">
+        </div>
+
+
+
+        <!-- Content of the diagram -->
+        <script>
+
+            function makeTree(event) {
+                event.preventDefault();
+
+
+
+                // Declaring and initializing some variables
+                var config = {
+                    container: "#OrganiseChart-simple"
+                };
+                var diagramList = [];
+                var entries = t.listAll();
+                var newText = "";
+
+                // Filling the array
+                diagramList.push(config);
+
+                //Establishing the root and adding it to our array
+                var currentParent = {
+                    text: {
+                        name: entries[0][0],
+                        salary: entries[0][1]
+                    }
+                };
+                diagramList.push(currentParent);
+
+
+                // Adding the rest of the entries
+                for (var i = 1; i < entries.length; i++) {
+                    let parent = entries[i][2].getName();
+                    let salary = entries[i][1];
+                    let name = entries[i][0];
+                    newText = {
+                        name: name,
+                        salary: salary
+                    }
+
+                    for (var j = 1; j < diagramList.length; j++) {
+                        if (diagramList[j].text.name === parent)
+                            currentParent = diagramList[j];
+                    }
+
+                    diagramList.push({
+                        parent: currentParent,
+                        text: newText
+                    })
+                }
+
+                // Displaying the visual tree
+                new Treant(diagramList);
+
+            }
+
+        </script>
+
+    </div>
+
+
+    <script>
+
+        // Adding to the dropdown in the form
+        function fillDropdown(event) {
+            event.preventDefault();
+
+            var selectElement = document.getElementById("input3");
+
+            while (selectElement.firstChild) {
+                selectElement.removeChild(selectElement.firstChild);
+            }
+
+            if (t.root != null) {
+                var choices = t.listAll();
+
+                for (var i = 0; i < choices.length; i++) {
+                    var option = document.createElement("option");
+                    option.value = choices[i][0]; //this will store the actual value
+                    option.textContent = choices[i][0]; // this will display the value on the html
+                    selectElement.appendChild(option);
+                    console.log(option)
+                }
+            }
+        }
+    </script>
+
+
+
+</body>
+
+</html>
