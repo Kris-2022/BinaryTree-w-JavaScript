@@ -1,6 +1,6 @@
 # BinaryTree-w-JavaScript
 A simple worker hierarchy tree I made using Javascript and the Treant.js library.
-<br> Everytime a new worker is submitted, it also gets added to the parent dropdown for easy branching.
+<br> Everytime a new worker is submitted, the tree and the dropdown menu get updated.
 <br>The site is live at : https://kris-2022.github.io/BinaryTree-w-JavaScript/
 
 
