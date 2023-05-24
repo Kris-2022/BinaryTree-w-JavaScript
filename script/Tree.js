@@ -139,29 +139,6 @@ class Tree {
     return this.size;
   }
 
-  toString() {
-    this.s = "";
-    if (this.size === 0) {
-      return null;
-    }
-    this.printAll(this.root);
-    return this.s;
-  }
-
-  printAll(n) {
-    if (n === this.root) {
-      this.s += n.getName() + ":" + n.getSalary();
-    } else {
-      this.s += " -> " + n.getName() + ":" + n.getSalary();
-    }
-
-    if (n.getLeftNode() !== null) {
-      this.printAll(n.getLeftNode());
-    }
-    if (n.getRightNode() !== null) {
-      this.printAll(n.getRightNode());
-    }
-  }
 
   listAll() {
     this.list = [];
